@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { resolve } from "path";
+import  'express-async-errors';
 
 import { router } from "./route";
 
