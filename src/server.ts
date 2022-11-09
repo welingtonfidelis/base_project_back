@@ -1,13 +1,11 @@
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import { resolve } from "path";
 import  'express-async-errors';
 
 import { router } from "./route";
 
-const enviromentPath = resolve(__dirname, "environment", ".env");
-dotenv.config({ path: enviromentPath });
+dotenv.config();
 const port = process.env.PORT || 3001;
 
 const app = express();
