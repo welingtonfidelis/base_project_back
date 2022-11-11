@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 const ENCRYPT_SALT = process.env.ENCRYPT_SALT;
 
 async function main() {
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       name: "Admin",
       email: "admin@email.com",
-      user_name: "admin",
+      username: "admin",
       password: bcrypt.hashSync("admin", Number(ENCRYPT_SALT)),
       is_blocked: false,
       permissions: ["ADMIN", "MANAGER", "USER"],

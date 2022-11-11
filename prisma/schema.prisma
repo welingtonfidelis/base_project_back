@@ -21,7 +21,7 @@ model User {
   id Int @id @default(autoincrement())
   name String
   email String @unique
-  user_name String @unique
+  username String @unique
   password String
   is_blocked Boolean @default(false)
   permissions Role[]

@@ -5,7 +5,7 @@ import { userService } from "./service";
 import { create } from "../../shared/service/token";
 import { config } from "../../config";
 
-const { loginService } = userService;
+const { loginService, getProfileService, updateProfileService } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
@@ -15,8 +15,12 @@ const userController = {
     const selectedUser = await loginService(body);
 
     const { id, name, email, permissions } = selectedUser;
-    const cookieData = create({ id, permissions }, JSON_SECRET, SESSION_DURATION_HOURS * 60 + 1);
-    
+    const cookieData = create(
+      { id, permissions },
+      JSON_SECRET,
+      SESSION_DURATION_HOURS * 60 + 1
+    );
+
     res.cookie(
       "secure_application_cookie",
       JSON.stringify({ token: cookieData }),
@@ -29,9 +33,32 @@ const userController = {
     return res.json({ name, email, permissions });
   },
 
-  profile(req: Request, res: Response) {
-    const cookies = req.cookies;
-    return res.json({});
+  async getProfile(req: Request, res: Response) {
+    const { id } = req.authenticated_user;
+
+    const selectedUser = await getProfileService(id);
+
+    if (!selectedUser) return res.json({});
+
+    const { name, email, username, permissions, created_at } = selectedUser;
+
+    return res.json({
+      id,
+      name,
+      email,
+      username,
+      permissions,
+      created_at,
+    });
+  },
+
+  async updateProfile(req: Request, res: Response) {
+    const { id } = req.authenticated_user;
+    const { body } = req;
+
+    await updateProfileService({ id, ...body });
+
+    return res.status(204).json({});
   },
 };
 

@@ -1,10 +1,28 @@
+import { User } from "@prisma/client";
 import { prisma } from "../../dbCLient";
+import { RequestUpdateProfilePayload } from "./types";
 
 const userRepository = {
-  findByUserNameOrEmail(user_name: string) {
+  findByUserName(username: string) {
     return prisma.user.findFirst({
-      where: { OR: [{ user_name }, { email: user_name }] },
+      where: { OR: [{ username }] },
     });
+  },
+
+  findByEmail(email: string) {
+    return prisma.user.findFirst({
+      where: { OR: [{ email }] },
+    });
+  },
+
+  findById(id: number) {
+    return prisma.user.findUnique({ where: { id } });
+  },
+
+  updateById(payload: RequestUpdateProfilePayload) {
+    const { id, ...data } = payload;
+
+    return prisma.user.update({ where: { id }, data });
   },
 
   list() {

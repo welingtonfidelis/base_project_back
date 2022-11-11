@@ -19,7 +19,6 @@ const authValidate = (
   try {
     const { token } = JSON.parse(cookies.secure_application_cookie);
 
-    console.log('JSON_SECRET: ', JSON_SECRET);
     const authenticatedUser = validate(token, JSON_SECRET);
     Object.assign(req, { authenticated_user: authenticatedUser });
 

@@ -2,14 +2,16 @@ import bcrypt from "bcryptjs";
 
 import { AppError } from "../../errors/AppError";
 import { userRepository } from "./repository";
-import { RequestLoginPayload } from "./types";
+import { RequestLoginPayload, RequestUpdateProfilePayload } from "./types";
 
-const { findByUserNameOrEmail, list } = userRepository;
+const { findByUserName, findByEmail, findById, updateById, list } = userRepository;
 
 const userService = {
   async loginService(payload: RequestLoginPayload){
-    const { user_name, password } = payload;
-    const selectedUser = await findByUserNameOrEmail(user_name);
+    const { username, password } = payload;
+    let selectedUser = await findByUserName(username);
+
+    if (!selectedUser) selectedUser = await findByEmail(username);
 
     if (!selectedUser) throw new AppError('Invalid email', 404);
     
@@ -19,6 +21,28 @@ const userService = {
     if(!isPasswordRight) throw new AppError("Invalid password", 401);
 
     return selectedUser;
+  },
+
+  getProfileService(id: number){
+    return findById(id);
+  },
+
+  async updateProfileService(payload: RequestUpdateProfilePayload){
+    const { id, username, email } = payload;
+
+    if (username) {
+      const selectedUser = await findByUserName(username);
+
+      if (selectedUser && selectedUser.id !== id) throw new AppError('User username already in use', 400);
+    }
+
+    if (email) {
+      const selectedUser = await findByEmail(email);
+
+      if (selectedUser && selectedUser.id !== id) throw new AppError('User email already in use', 400);
+    }
+
+    return updateById(payload);
   },
 
   list() {

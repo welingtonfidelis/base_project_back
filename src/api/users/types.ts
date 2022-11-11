@@ -1,5 +1,12 @@
+import { User } from "@prisma/client";
+
 // LOGIN
 export interface RequestLoginPayload {
-    user_name: string;
+    username: string;
     password: string;
+}
+
+// PROFILE
+export interface RequestUpdateProfilePayload extends Partial<User> {
+    id: number;
 }
