@@ -1,12 +1,16 @@
 import { NextFunction, Request, Response, Router } from "express";
 
 import { healthRouter } from "./api/health/route";
-import { userRouter } from "./api/users/route";
+import { userNoAuthRouter, userAuthRouter } from "./api/users/route";
 
 const router = Router();
 
+// NO AUTHENTICATED ROUTES
 router.use(healthRouter);
-router.use(userRouter);
+router.use(userNoAuthRouter);
+
+// AUTHENTICATED ROUTES
+router.use(userAuthRouter);
 
 // ERROR HANDLER
 router.use((error: any, req: Request, res: Response, next: NextFunction) => {

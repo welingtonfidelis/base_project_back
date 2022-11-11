@@ -1,12 +1,19 @@
 import { Router } from "express";
 
-import { requestPayloadValidate } from "../../shared/middleware/requestPayloadValidate";
 import { userController } from "./controller";
+import { authValidate } from "../../shared/middleware/authValidate";
+import { payloadValidate } from "../../shared/middleware/payloadValidate";
 import { loginSchema } from "./midleware/requestPayloadValidateSchema/login";
 
-const userRouter = Router();
-const { login } = userController;
+const userNoAuthRouter = Router();
+const userAuthRouter = Router();
+const { login, profile } = userController;
 
-userRouter.post('/users/login', requestPayloadValidate(loginSchema), login);
+// NOT AUTHENTICATED ROUTES
+userNoAuthRouter.post("/users/login", payloadValidate(loginSchema), login);
 
-export { userRouter };
+// AUTHENTICATED ROUTES
+userAuthRouter.use(authValidate);
+userAuthRouter.get("/users/profile", profile);
+
+export { userNoAuthRouter, userAuthRouter };

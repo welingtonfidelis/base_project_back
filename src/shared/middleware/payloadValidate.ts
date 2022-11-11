@@ -3,7 +3,7 @@ import Joi from "joi";
 
 import { AppError } from "../../errors/AppError";
 
-const requestPayloadValidate = (schema: Joi.Schema) => {
+const payloadValidate = (schema: Joi.Schema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const input = { ...req.body, ...req.params, ...req.query };
     const options = {
@@ -23,4 +23,4 @@ const requestPayloadValidate = (schema: Joi.Schema) => {
   };
 };
 
-export { requestPayloadValidate };
+export { payloadValidate };

@@ -2,12 +2,12 @@ import bcrypt from "bcryptjs";
 
 import { AppError } from "../../errors/AppError";
 import { userRepository } from "./repository";
-import { RequestLoginPayload, ResponseLoginPayload } from "./types";
+import { RequestLoginPayload } from "./types";
 
 const { findByUserNameOrEmail, list } = userRepository;
 
 const userService = {
-  async loginService(payload: RequestLoginPayload): Promise<ResponseLoginPayload>{
+  async loginService(payload: RequestLoginPayload){
     const { user_name, password } = payload;
     const selectedUser = await findByUserNameOrEmail(user_name);
 
@@ -18,8 +18,7 @@ const userService = {
     const isPasswordRight = bcrypt.compareSync(password, selectedUser.password);
     if(!isPasswordRight) throw new AppError("Invalid password", 401);
 
-    const { name, email, permissions } = selectedUser;
-    return { name, email, permissions };
+    return selectedUser;
   },
 
   list() {
