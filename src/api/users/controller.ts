@@ -5,7 +5,7 @@ import { userService } from "./service";
 import { create } from "../../shared/service/token";
 import { config } from "../../config";
 
-const { loginService, getProfileService, updateProfileService } = userService;
+const { loginService, getUserByIdService, updateUserService, updatePasswordService } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
@@ -36,7 +36,7 @@ const userController = {
   async getProfile(req: Request, res: Response) {
     const { id } = req.authenticated_user;
 
-    const selectedUser = await getProfileService(id);
+    const selectedUser = await getUserByIdService(id);
 
     if (!selectedUser) return res.json({});
 
@@ -56,7 +56,16 @@ const userController = {
     const { id } = req.authenticated_user;
     const { body } = req;
 
-    await updateProfileService({ id, ...body });
+    await updateUserService({ id, ...body });
+
+    return res.status(204).json({});
+  },
+
+  async updateProfilePassword(req: Request, res: Response) {
+    const { id } = req.authenticated_user;
+    const { body } = req;
+
+    await updatePasswordService({ id, ...body });
 
     return res.status(204).json({});
   },

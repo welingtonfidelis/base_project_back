@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -7,9 +7,9 @@ import "express-async-errors";
 import { router } from "./route";
 import { config } from "./config";
 
-const { PORT } = config;
 
-dotenv.config();
+
+const { PORT } = config;
 
 const app = express();
 app.use(express.json());
