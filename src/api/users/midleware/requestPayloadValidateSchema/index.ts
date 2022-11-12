@@ -1,5 +1,11 @@
 import { loginSchema } from "./login";
 import { updateProfileSchema } from "./updateProfile";
-import { updatePasswordSchema } from "./updatePassword";
+import { updateProfilePasswordSchema } from "./updateProfilePassword";
+import { resetPasswordSchema } from "./resetPassword";
 
-export { loginSchema, updateProfileSchema, updatePasswordSchema };
+export {
+  loginSchema,
+  updateProfileSchema,
+  updateProfilePasswordSchema,
+  resetPasswordSchema,
+};

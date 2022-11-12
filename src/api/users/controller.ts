@@ -5,7 +5,7 @@ import { userService } from "./service";
 import { create } from "../../shared/service/token";
 import { config } from "../../config";
 
-const { loginService, getUserByIdService, updateUserService, updatePasswordService } = userService;
+const { loginService, getUserByIdService, updateUserService, updatePasswordService, resetPasswordService } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
@@ -69,6 +69,13 @@ const userController = {
 
     return res.status(204).json({});
   },
+
+  async resetProfilePassword(req: Request, res: Response) {
+    const { body } = req;
+    await resetPasswordService(body);
+
+    return res.status(204).json({});
+  }
 };
 
 export { userController };

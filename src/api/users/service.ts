@@ -1,10 +1,16 @@
 import bcrypt from "bcryptjs";
-import { config } from "../../config";
+import fs from "fs";
+import handlebars from "handlebars";
+import { resolve } from "path";
 
+import { config } from "../../config";
 import { AppError } from "../../errors/AppError";
+import { sendMail } from "../../shared/service/aws";
+import { create } from "../../shared/service/token";
 import { userRepository } from "./repository";
 import {
   LoginPayload,
+  ResetPasswordPayload,
   UpdatePasswordPayload,
   UpdateUserPayload,
 } from "./types";
@@ -12,7 +18,8 @@ import {
 const { findByUserName, findByEmail, findById, updateById, list } =
   userRepository;
 
-const { ENCRYPT_SALT } = config;
+const { ENCRYPT_SALT, SOURCE_EMAIL, URL_FRONT_RESET_PASSWORD, JSON_SECRET } =
+  config;
 
 const userService = {
   async loginService(payload: LoginPayload) {
@@ -70,6 +77,41 @@ const userService = {
 
     const password = bcrypt.hashSync(new_password, ENCRYPT_SALT);
     return updateById({ id, password });
+  },
+
+  async resetPasswordService(payload: ResetPasswordPayload) {
+    const { username, language } = payload;
+
+    let selectedUser = await findByUserName(username);
+
+    if (!selectedUser) selectedUser = await findByEmail(username);
+
+    if (!selectedUser) throw new AppError("Invalid email", 404);
+
+    const { id, name, email } = selectedUser;
+    const htmlTemplatePath = resolve(
+      __dirname,
+      "..",
+      "..",
+      "shared",
+      "view",
+      "html",
+      language,
+      "resetPassword.hbs"
+    );
+    const token = create({ id }, JSON_SECRET, 15);
+    const htmlTemplate = fs.readFileSync(htmlTemplatePath).toString("utf8");
+    const html = handlebars.compile(htmlTemplate)({
+      name,
+      link: `${process.env.URL_FRONT_RESET_PASSWORD}?token=${token}`,
+    });
+
+    return sendMail({
+      from: SOURCE_EMAIL,
+      to: [email],
+      subject: "reset password",
+      message: html,
+    });
   },
 
   list() {
