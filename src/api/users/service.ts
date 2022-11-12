@@ -12,6 +12,7 @@ import {
   LoginPayload,
   ResetPasswordPayload,
   UpdatePasswordPayload,
+  UpdateResetedPasswordPayload,
   UpdateUserPayload,
 } from "./types";
 
@@ -112,6 +113,13 @@ const userService = {
       subject: "reset password",
       message: html,
     });
+  },
+
+  async updateResetedPasswordService(payload: UpdateResetedPasswordPayload) {
+    const { id, new_password } = payload;
+
+    const password = bcrypt.hashSync(new_password, ENCRYPT_SALT);
+    return updateById({ id, password });
   },
 
   list() {

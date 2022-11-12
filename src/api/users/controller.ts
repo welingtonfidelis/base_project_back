@@ -2,10 +2,17 @@ import { Request, Response } from "express";
 import dateFnsAdd from "date-fns/add";
 
 import { userService } from "./service";
-import { create } from "../../shared/service/token";
+import { create, validate } from "../../shared/service/token";
 import { config } from "../../config";
 
-const { loginService, getUserByIdService, updateUserService, updatePasswordService, resetPasswordService } = userService;
+const {
+  loginService,
+  getUserByIdService,
+  updateUserService,
+  updatePasswordService,
+  resetPasswordService,
+  updateResetedPasswordService,
+} = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
@@ -75,7 +82,16 @@ const userController = {
     await resetPasswordService(body);
 
     return res.status(204).json({});
-  }
+  },
+
+  async updateResetedPassword(req: Request, res: Response) {
+    const { new_password, token } = req.body;
+
+    const { id } = validate(token, JSON_SECRET) as any;
+    await updateResetedPasswordService({ id, new_password });
+
+    return res.status(204).json({});
+  },
 };
 
 export { userController };

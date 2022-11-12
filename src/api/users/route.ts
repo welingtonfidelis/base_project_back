@@ -6,6 +6,7 @@ import { payloadValidate } from "../../shared/middleware/payloadValidate";
 import {
   loginSchema,
   resetPasswordSchema,
+  updatedResetedPasswordSchema,
   updateProfilePasswordSchema,
   updateProfileSchema,
 } from "./midleware/requestPayloadValidateSchema";
@@ -18,6 +19,7 @@ const {
   updateProfile,
   updateProfilePassword,
   resetProfilePassword,
+  updateResetedPassword,
 } = userController;
 
 // NOT AUTHENTICATED ROUTES
@@ -26,6 +28,11 @@ userNoAuthRouter.post(
   "/users/reset-password",
   payloadValidate(resetPasswordSchema),
   resetProfilePassword
+);
+userNoAuthRouter.post(
+  "/users/update-reseted-password",
+  payloadValidate(updatedResetedPasswordSchema),
+  updateResetedPassword
 );
 
 // AUTHENTICATED ROUTES

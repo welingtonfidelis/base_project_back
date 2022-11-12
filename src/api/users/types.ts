@@ -21,3 +21,8 @@ export interface ResetPasswordPayload {
     username: string;
     language: string;
 }
+
+export interface UpdateResetedPasswordPayload {
+    id: number;
+    new_password: string;
+}
