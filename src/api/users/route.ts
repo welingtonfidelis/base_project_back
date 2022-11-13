@@ -4,6 +4,7 @@ import { userController } from "./controller";
 import { authValidate } from "../../shared/middleware/authValidate";
 import { payloadValidate } from "../../shared/middleware/payloadValidate";
 import {
+  listAllSchema,
   loginSchema,
   resetPasswordSchema,
   updatedResetedPasswordSchema,
@@ -20,6 +21,7 @@ const {
   updateProfilePassword,
   resetProfilePassword,
   updateResetedPassword,
+  listAll,
 } = userController;
 
 // NOT AUTHENTICATED ROUTES
@@ -48,5 +50,7 @@ userAuthRouter.patch(
   payloadValidate(updateProfilePasswordSchema),
   updateProfilePassword
 );
+
+userAuthRouter.get("/users", payloadValidate(listAllSchema), listAll);
 
 export { userNoAuthRouter, userAuthRouter };

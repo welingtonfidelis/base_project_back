@@ -24,8 +24,18 @@ const userRepository = {
     return prisma.user.update({ where: { id }, data });
   },
 
-  list() {
-    return prisma.user.findMany();
+  async listAllIgnoreId(id: number, page: number, limit: number) {
+    const offset = (page - 1) * limit;
+
+    const total = await prisma.user.count({ where: { id: { not: id } } });
+
+    const users = await prisma.user.findMany({
+      where: { id: { not: id } },
+      skip: offset,
+      take: limit,
+    });
+
+    return { users, total };
   },
 };
 

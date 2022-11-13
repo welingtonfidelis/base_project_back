@@ -16,7 +16,7 @@ import {
   UpdateUserPayload,
 } from "./types";
 
-const { findByUserName, findByEmail, findById, updateById, list } =
+const { findByUserName, findByEmail, findById, updateById, listAllIgnoreId } =
   userRepository;
 
 const { ENCRYPT_SALT, SOURCE_EMAIL, URL_FRONT_RESET_PASSWORD, JSON_SECRET } =
@@ -104,7 +104,7 @@ const userService = {
     const htmlTemplate = fs.readFileSync(htmlTemplatePath).toString("utf8");
     const html = handlebars.compile(htmlTemplate)({
       name,
-      link: `${process.env.URL_FRONT_RESET_PASSWORD}?token=${token}`,
+      link: `${URL_FRONT_RESET_PASSWORD}?token=${token}`,
     });
 
     return sendMail({
@@ -122,8 +122,8 @@ const userService = {
     return updateById({ id, password });
   },
 
-  list() {
-    return list();
+  listAllService(id: number, page: number, limit: number) {
+    return listAllIgnoreId(id, page, limit);
   },
 };
 

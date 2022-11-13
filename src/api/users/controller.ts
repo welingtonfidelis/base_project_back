@@ -12,6 +12,7 @@ const {
   updatePasswordService,
   resetPasswordService,
   updateResetedPasswordService,
+  listAllService,
 } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
@@ -91,6 +92,16 @@ const userController = {
     await updateResetedPasswordService({ id, new_password });
 
     return res.status(204).json({});
+  },
+
+  async listAll(req: Request, res: Response) {
+    const { id } = req.authenticated_user;
+    const page = parseInt((req.query?.page as string) ?? "1");
+    const limit = parseInt((req.query?.limit as string) ?? "20");
+
+    const users = await listAllService(id, page, limit);
+
+    return res.json(users);
   },
 };
 
