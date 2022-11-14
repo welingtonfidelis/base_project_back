@@ -5,7 +5,7 @@ import { resolve } from "path";
 
 import { config } from "../../config";
 import { AppError } from "../../errors/AppError";
-import { sendMail } from "../../shared/service/aws";
+import { sendMail } from "../../shared/service/mail";
 import { create } from "../../shared/service/token";
 import { userRepository } from "./repository";
 import {

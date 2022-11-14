@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 
 import { userController } from "./controller";
 import { authValidate } from "../../shared/middleware/authValidate";
@@ -52,7 +53,7 @@ userAuthRouter.use(authValidate);
 userAuthRouter.get("/users/profile", getProfile);
 userAuthRouter.patch(
   "/users/profile",
-  payloadValidate(updateProfileSchema),
+  [multer().single("file"), payloadValidate(updateProfileSchema)],
   updateProfile
 );
 userAuthRouter.patch(

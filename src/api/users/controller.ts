@@ -4,6 +4,7 @@ import dateFnsAdd from "date-fns/add";
 import { userService } from "./service";
 import { create, validate } from "../../shared/service/token";
 import { config } from "../../config";
+import { deleteFile, uploadImage } from "../../shared/service/file";
 
 const {
   loginService,
@@ -57,6 +58,27 @@ const userController = {
   async updateProfile(req: Request, res: Response) {
     const { id } = req.authenticated_user;
     const { body } = req;
+
+    if (req.file) {
+      const { Location, Key } = await uploadImage(
+        req.file,
+        "profile",
+        `user_${id}`
+      );
+
+      body.image_url = Location;
+      body.image_key = Key;
+    } else if (body.delete_image === "true") {
+      const selectedUser = await getUserByIdService(id);
+
+      if (selectedUser && selectedUser.image_key) {
+        await deleteFile(selectedUser.image_key);
+      }
+
+      delete body.delete_image;
+      body.image_url = "";
+      body.image_key = "";
+    }
 
     await updateUserService({ id, ...body });
 

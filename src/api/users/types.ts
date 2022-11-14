@@ -7,6 +7,7 @@ export interface LoginPayload {
 
 export interface UpdateUserPayload extends Partial<User> {
   id: number;
+  file?: Express.Multer.File;
 }
 
 export interface UpdatePasswordPayload {

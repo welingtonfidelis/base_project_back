@@ -23,6 +23,8 @@ model User {
   email String @unique
   username String @unique
   password String
+  image_url String
+  image_key String
   is_blocked Boolean @default(false)
   permissions Role[]
   created_at DateTime @default(now())
