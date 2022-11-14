@@ -1,28 +1,35 @@
 import { User } from "@prisma/client";
 
-// LOGIN
 export interface LoginPayload {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
-// PROFILE
 export interface UpdateUserPayload extends Partial<User> {
-    id: number;
+  id: number;
 }
 
 export interface UpdatePasswordPayload {
-    id: number;
-    old_password: string;
-    new_password: string;
+  id: number;
+  old_password: string;
+  new_password: string;
 }
 
 export interface ResetPasswordPayload {
-    username: string;
-    language: string;
+  username: string;
+  language: string;
 }
 
 export interface UpdateResetedPasswordPayload {
-    id: number;
-    new_password: string;
+  id: number;
+  new_password: string;
+}
+
+export interface ListAllIgnoreIdPayload {
+  id: number;
+  page: number;
+  limit: number;
+}
+export interface DeleteByIdPayload {
+  id: number;
 }

@@ -9,6 +9,8 @@ import { sendMail } from "../../shared/service/aws";
 import { create } from "../../shared/service/token";
 import { userRepository } from "./repository";
 import {
+  DeleteByIdPayload,
+  ListAllIgnoreIdPayload,
   LoginPayload,
   ResetPasswordPayload,
   UpdatePasswordPayload,
@@ -16,8 +18,14 @@ import {
   UpdateUserPayload,
 } from "./types";
 
-const { findByUserName, findByEmail, findById, updateById, listAllIgnoreId } =
-  userRepository;
+const {
+  findByUserName,
+  findByEmail,
+  findById,
+  updateById,
+  listAllIgnoreId,
+  deleteById,
+} = userRepository;
 
 const { ENCRYPT_SALT, SOURCE_EMAIL, URL_FRONT_RESET_PASSWORD, JSON_SECRET } =
   config;
@@ -122,8 +130,12 @@ const userService = {
     return updateById({ id, password });
   },
 
-  listAllService(id: number, page: number, limit: number) {
-    return listAllIgnoreId(id, page, limit);
+  listAllService(payload: ListAllIgnoreIdPayload) {
+    return listAllIgnoreId(payload);
+  },
+
+  deleteById(payload: DeleteByIdPayload) {
+    return deleteById(payload);
   },
 };
 

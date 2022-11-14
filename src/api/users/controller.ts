@@ -13,6 +13,7 @@ const {
   resetPasswordService,
   updateResetedPasswordService,
   listAllService,
+  deleteById,
 } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
@@ -48,16 +49,9 @@ const userController = {
 
     if (!selectedUser) return res.json({});
 
-    const { name, email, username, permissions, created_at } = selectedUser;
+    const { password, updated_at, ...rest } = selectedUser;
 
-    return res.json({
-      id,
-      name,
-      email,
-      username,
-      permissions,
-      created_at,
-    });
+    return res.json(rest);
   },
 
   async updateProfile(req: Request, res: Response) {
@@ -99,9 +93,50 @@ const userController = {
     const page = parseInt((req.query?.page as string) ?? "1");
     const limit = parseInt((req.query?.limit as string) ?? "20");
 
-    const users = await listAllService(id, page, limit);
+    const users = await listAllService({ id, page, limit });
+    const response = {
+      ...users,
+      users: users.users.map((item) => {
+        const { password, updated_at, ...rest } = item;
+        return rest;
+      }),
+    };
 
-    return res.json(users);
+    return res.json(response);
+  },
+
+  async getById(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+
+    const selectedUser = await getUserByIdService(id);
+
+    if (!selectedUser) return res.status(404).json({});
+
+    const { password, updated_at, ...rest } = selectedUser;
+
+    return res.json(rest);
+  },
+
+  async updateById(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const { body } = req;
+
+    await updateUserService({ id, ...body });
+
+    return res.status(204).json({});
+  },
+
+  async deleteById(req: Request, res: Response) {
+    const id = parseInt(req.params.id);
+    const { id: loggedUserId } = req.authenticated_user;
+
+    if (id === loggedUserId) {
+      return res.status(400).json({ message: "Cannot delete your own user" });
+    }
+
+    await deleteById({ id });
+
+    return res.status(204).json({});
   },
 };
 

@@ -4,13 +4,20 @@ import { userController } from "./controller";
 import { authValidate } from "../../shared/middleware/authValidate";
 import { payloadValidate } from "../../shared/middleware/payloadValidate";
 import {
+    deleteByIdSchema,
+    getByIdSchema,
   listAllSchema,
   loginSchema,
   resetPasswordSchema,
+  updateByIdSchema,
   updatedResetedPasswordSchema,
   updateProfilePasswordSchema,
   updateProfileSchema,
 } from "./midleware/requestPayloadValidateSchema";
+import { permissionValidate } from "../../shared/middleware/permissionValidate";
+import { Role } from "@prisma/client";
+
+const { ADMIN, MANAGER, USER } = Role;
 
 const userNoAuthRouter = Router();
 const userAuthRouter = Router();
@@ -22,6 +29,9 @@ const {
   resetProfilePassword,
   updateResetedPassword,
   listAll,
+  getById,
+  updateById,
+  deleteById
 } = userController;
 
 // NOT AUTHENTICATED ROUTES
@@ -51,6 +61,11 @@ userAuthRouter.patch(
   updateProfilePassword
 );
 
+// ROUTES WITH PERMISSION VALIDATE
+userAuthRouter.use(permissionValidate([ADMIN, MANAGER]));
 userAuthRouter.get("/users", payloadValidate(listAllSchema), listAll);
+userAuthRouter.get("/users/:id", payloadValidate(getByIdSchema), getById);
+userAuthRouter.patch("/users/:id", payloadValidate(updateByIdSchema), updateById);
+userAuthRouter.delete("/users/:id", payloadValidate(deleteByIdSchema), deleteById);
 
 export { userNoAuthRouter, userAuthRouter };

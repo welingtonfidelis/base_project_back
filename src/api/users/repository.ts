@@ -1,5 +1,5 @@
 import { prisma } from "../../dbCLient";
-import { UpdateUserPayload } from "./types";
+import { DeleteByIdPayload, ListAllIgnoreIdPayload, UpdateUserPayload } from "./types";
 
 const userRepository = {
   findByUserName(username: string) {
@@ -24,7 +24,8 @@ const userRepository = {
     return prisma.user.update({ where: { id }, data });
   },
 
-  async listAllIgnoreId(id: number, page: number, limit: number) {
+  async listAllIgnoreId(payload: ListAllIgnoreIdPayload) {
+    const { id, page, limit } = payload;
     const offset = (page - 1) * limit;
 
     const total = await prisma.user.count({ where: { id: { not: id } } });
@@ -36,6 +37,12 @@ const userRepository = {
     });
 
     return { users, total };
+  },
+
+  deleteById(payload: DeleteByIdPayload) {
+    const { id } = payload;
+
+    return prisma.user.delete({ where: { id } });
   },
 };
 
