@@ -37,7 +37,7 @@ const userService = {
 
     if (!selectedUser) selectedUser = await findByEmail(username);
 
-    if (!selectedUser) throw new AppError("Invalid email", 404);
+    if (!selectedUser) throw new AppError("Invalid username or email", 404);
 
     if (selectedUser.is_blocked) throw new AppError("Blocked user", 404);
 
@@ -95,7 +95,7 @@ const userService = {
 
     if (!selectedUser) selectedUser = await findByEmail(username);
 
-    if (!selectedUser) throw new AppError("Invalid email", 404);
+    if (!selectedUser) throw new AppError("Invalid username or email", 404);
 
     const { id, name, email } = selectedUser;
     const htmlTemplatePath = resolve(
