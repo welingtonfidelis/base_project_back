@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
 
 import { healthRouter } from "./api/health/route";
-import { userNoAuthRouter, userAuthRouter } from "./api/users/route";
+import { userNoAuthRouter, userRouter } from "./api/users/route";
+import { authValidate } from "./shared/middleware/authValidate";
 
 const router = Router();
 
@@ -10,7 +11,8 @@ router.use(healthRouter);
 router.use(userNoAuthRouter);
 
 // AUTHENTICATED ROUTES
-router.use(userAuthRouter);
+router.use(authValidate);
+router.use(userRouter);
 
 // ERROR HANDLER
 router.use((error: any, req: Request, res: Response, next: NextFunction) => {

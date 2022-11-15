@@ -1,18 +1,28 @@
 import { Request, Response } from "express";
 import dateFnsAdd from "date-fns/add";
+import bcrypt from "bcryptjs";
 
 import { userService } from "./service";
 import { create, validate } from "../../shared/service/token";
 import { config } from "../../config";
-import { deleteFile, uploadImage } from "../../shared/service/file";
+import {
+  GetByIdParams,
+  ListAllQuery,
+  LoginBody,
+  ResetPasswordBody,
+  UpdatePasswordBody,
+  UpdateResetedPasswordBody,
+  UpdateUserBody,
+} from "./types";
+import { Role } from "@prisma/client";
 
 const {
-  loginService,
   getUserByIdService,
+  getUserByUsernameService,
+  getUserByEmailService,
   updateUserService,
   updatePasswordService,
   resetPasswordService,
-  updateResetedPasswordService,
   listAllService,
   deleteById,
 } = userService;
@@ -21,8 +31,25 @@ const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
 const userController = {
   async login(req: Request, res: Response) {
-    const { body } = req;
-    const selectedUser = await loginService(body);
+    const body = req.body as LoginBody;
+    const { username, password } = body;
+
+    let selectedUser = await getUserByUsernameService(username);
+
+    if (!selectedUser) selectedUser = await getUserByEmailService(username);
+
+    if (!selectedUser) {
+      return res.status(404).json({ message: "Invalid username or email" });
+    }
+
+    if (selectedUser.is_blocked) {
+      return res.status(401).json({ message: "Blocked user" });
+    }
+
+    const validPassword = bcrypt.compareSync(password, selectedUser.password);
+    if (!validPassword) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
 
     const { id, name, email, permissions } = selectedUser;
     const cookieData = create(
@@ -43,6 +70,12 @@ const userController = {
     return res.json({ name, email, permissions });
   },
 
+  logout(req: Request, res: Response) {
+    res.clearCookie("secure_application_cookie");
+
+    return res.status(204).json({});
+  },
+
   async getProfile(req: Request, res: Response) {
     const { id } = req.authenticated_user;
 
@@ -57,63 +90,89 @@ const userController = {
 
   async updateProfile(req: Request, res: Response) {
     const { id } = req.authenticated_user;
-    const { body } = req;
+    const body = req.body as UpdateUserBody;
+    const { username, email } = body;
+    const { file } = req;
 
-    if (req.file) {
-      const { Location, Key } = await uploadImage(
-        req.file,
-        "profile",
-        `user_${id}`
-      );
+    if (username) {
+      const selectedUser = await getUserByUsernameService(username);
 
-      body.image_url = Location;
-      body.image_key = Key;
-    } else if (body.delete_image === "true") {
-      const selectedUser = await getUserByIdService(id);
-
-      if (selectedUser && selectedUser.image_key) {
-        await deleteFile(selectedUser.image_key);
-      }
-
-      delete body.delete_image;
-      body.image_url = "";
-      body.image_key = "";
+      if (selectedUser && selectedUser.id !== id)
+        return res
+          .status(400)
+          .json({ message: "User username already in use" });
     }
 
-    await updateUserService({ id, ...body });
+    if (email) {
+      const selectedUser = await getUserByEmailService(email);
+
+      if (selectedUser && selectedUser.id !== id)
+        return res.status(400).json({ message: "User email already in use" });
+    }
+
+    await updateUserService({ ...body, file, id });
 
     return res.status(204).json({});
   },
 
   async updateProfilePassword(req: Request, res: Response) {
     const { id } = req.authenticated_user;
-    const { body } = req;
+    const body = req.body as UpdatePasswordBody;
+    const { old_password, new_password } = body;
 
-    await updatePasswordService({ id, ...body });
+    const selectedUser = await getUserByIdService(id);
+
+    if (!selectedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const validPassword = bcrypt.compareSync(
+      old_password,
+      selectedUser.password
+    );
+    if (!validPassword) {
+      return res.status(401).json({ message: "Invalid old password" });
+    }
+
+    await updatePasswordService({ id, new_password });
 
     return res.status(204).json({});
   },
 
-  async resetProfilePassword(req: Request, res: Response) {
-    const { body } = req;
-    await resetPasswordService(body);
+  async resetPassword(req: Request, res: Response) {
+    const body = req.body as ResetPasswordBody;
+    const { username, language } = body;
+
+    let selectedUser = await getUserByUsernameService(username);
+
+    if (!selectedUser) selectedUser = await getUserByEmailService(username);
+
+    if (!selectedUser) {
+      return res.status(404).json({ message: "Invalid username or email" });
+    }
+
+    if (selectedUser.is_blocked) {
+      return res.status(401).json({ message: "Blocked user" });
+    }
+
+    const { id, name, email } = selectedUser;
+    await resetPasswordService({ id, name, email, language });
 
     return res.status(204).json({});
   },
 
   async updateResetedPassword(req: Request, res: Response) {
-    const { new_password, token } = req.body;
+    const { new_password, token } = req.body as UpdateResetedPasswordBody;
 
     const { id } = validate(token, JSON_SECRET) as any;
-    await updateResetedPasswordService({ id, new_password });
+    await updatePasswordService({ id, new_password });
 
     return res.status(204).json({});
   },
 
   async listAll(req: Request, res: Response) {
     const { id } = req.authenticated_user;
-    const page = parseInt((req.query?.page as string) ?? "1");
-    const limit = parseInt((req.query?.limit as string) ?? "20");
+    const { page, limit } = req.query as unknown as ListAllQuery;
 
     const users = await listAllService({ id, page, limit });
     const response = {
@@ -128,9 +187,9 @@ const userController = {
   },
 
   async getById(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
+    const { id } = req.params as unknown as GetByIdParams;
 
-    const selectedUser = await getUserByIdService(id);
+    const selectedUser = await getUserByIdService(parseInt(id));
 
     if (!selectedUser) return res.status(404).json({});
 
@@ -141,9 +200,20 @@ const userController = {
 
   async updateById(req: Request, res: Response) {
     const id = parseInt(req.params.id);
-    const { body } = req;
+    const body = req.body as UpdateUserBody;
 
-    await updateUserService({ id, ...body });
+    if (body.permissions) {
+      const { permissions } = req.authenticated_user;
+      const hasInvalidPermission =
+        body.permissions.includes(Role.ADMIN) &&
+        !permissions.includes(Role.ADMIN);
+
+      if (hasInvalidPermission) {
+        return res.status(400).json({ message: "Invalid permission" });
+      }
+    }
+
+    await updateUserService({ ...body, id });
 
     return res.status(204).json({});
   },
@@ -156,7 +226,7 @@ const userController = {
       return res.status(400).json({ message: "Cannot delete your own user" });
     }
 
-    await deleteById({ id });
+    await deleteById(id);
 
     return res.status(204).json({});
   },

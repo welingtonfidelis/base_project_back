@@ -4,17 +4,14 @@ import handlebars from "handlebars";
 import { resolve } from "path";
 
 import { config } from "../../config";
-import { AppError } from "../../errors/AppError";
+import { deleteFile, uploadImage } from "../../shared/service/file";
 import { sendMail } from "../../shared/service/mail";
 import { create } from "../../shared/service/token";
 import { userRepository } from "./repository";
 import {
-  DeleteByIdPayload,
   ListAllIgnoreIdPayload,
-  LoginPayload,
   ResetPasswordPayload,
   UpdatePasswordPayload,
-  UpdateResetedPasswordPayload,
   UpdateUserPayload,
 } from "./types";
 
@@ -31,73 +28,57 @@ const { ENCRYPT_SALT, SOURCE_EMAIL, URL_FRONT_RESET_PASSWORD, JSON_SECRET } =
   config;
 
 const userService = {
-  async loginService(payload: LoginPayload) {
-    const { username, password } = payload;
-    let selectedUser = await findByUserName(username);
-
-    if (!selectedUser) selectedUser = await findByEmail(username);
-
-    if (!selectedUser) throw new AppError("Invalid username or email", 404);
-
-    if (selectedUser.is_blocked) throw new AppError("Blocked user", 404);
-
-    const isPasswordRight = bcrypt.compareSync(password, selectedUser.password);
-    if (!isPasswordRight) throw new AppError("Invalid password", 401);
-
-    return selectedUser;
-  },
-
   getUserByIdService(id: number) {
     return findById(id);
   },
 
+  getUserByUsernameService(username: string) {
+    return findByUserName(username);
+  },
+
+  getUserByEmailService(email: string) {
+    return findByEmail(email);
+  },
+
   async updateUserService(payload: UpdateUserPayload) {
-    const { id, username, email } = payload;
+    const { id, file, delete_image } = payload;
 
-    if (username) {
-      const selectedUser = await findByUserName(username);
+    if (file) {
+      const { Location, Key } = await uploadImage(
+        file,
+        "profile",
+        `user_${id}`
+      );
 
-      if (selectedUser && selectedUser.id !== id)
-        throw new AppError("User username already in use", 400);
+      payload.image_url = Location;
+      payload.image_key = Key;
+    } else if (delete_image === "true") {
+      const selectedUser = await findById(id);
+
+      if (selectedUser && selectedUser.image_key) {
+        await deleteFile(selectedUser.image_key);
+      }
+
+      payload.image_url = "";
+      payload.image_key = "";
     }
 
-    if (email) {
-      const selectedUser = await findByEmail(email);
+    delete payload.delete_image;
+    delete payload.file;
 
-      if (selectedUser && selectedUser.id !== id)
-        throw new AppError("User email already in use", 400);
-    }
-
-    return updateById(payload);
+    return updateById(id, payload);
   },
 
   async updatePasswordService(payload: UpdatePasswordPayload) {
-    const { id, old_password, new_password } = payload;
-
-    const selectedUser = await findById(id);
-
-    if (!selectedUser) throw new AppError("User not found", 404);
-
-    const isPasswordRight = bcrypt.compareSync(
-      old_password,
-      selectedUser.password
-    );
-    if (!isPasswordRight) throw new AppError("Invalid old password", 401);
+    const { id, new_password } = payload;
 
     const password = bcrypt.hashSync(new_password, ENCRYPT_SALT);
-    return updateById({ id, password });
+    return updateById(id, { password });
   },
 
   async resetPasswordService(payload: ResetPasswordPayload) {
-    const { username, language } = payload;
+    const { id, name, email, language } = payload;
 
-    let selectedUser = await findByUserName(username);
-
-    if (!selectedUser) selectedUser = await findByEmail(username);
-
-    if (!selectedUser) throw new AppError("Invalid username or email", 404);
-
-    const { id, name, email } = selectedUser;
     const htmlTemplatePath = resolve(
       __dirname,
       "..",
@@ -123,19 +104,12 @@ const userService = {
     });
   },
 
-  async updateResetedPasswordService(payload: UpdateResetedPasswordPayload) {
-    const { id, new_password } = payload;
-
-    const password = bcrypt.hashSync(new_password, ENCRYPT_SALT);
-    return updateById({ id, password });
-  },
-
   listAllService(payload: ListAllIgnoreIdPayload) {
     return listAllIgnoreId(payload);
   },
 
-  deleteById(payload: DeleteByIdPayload) {
-    return deleteById(payload);
+  deleteById(id: number) {
+    return deleteById(id);
   },
 };
 

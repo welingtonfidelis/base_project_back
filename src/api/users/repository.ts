@@ -1,5 +1,6 @@
+import { User } from "@prisma/client";
 import { prisma } from "../../dbCLient";
-import { DeleteByIdPayload, ListAllIgnoreIdPayload, UpdateUserPayload } from "./types";
+import { ListAllIgnoreIdPayload, UpdateUserPayload } from "./types";
 
 const userRepository = {
   findByUserName(username: string) {
@@ -18,9 +19,7 @@ const userRepository = {
     return prisma.user.findUnique({ where: { id } });
   },
 
-  updateById(payload: UpdateUserPayload) {
-    const { id, ...data } = payload;
-
+  updateById(id: number, data: Partial<User>) {
     return prisma.user.update({ where: { id }, data });
   },
 
@@ -39,9 +38,7 @@ const userRepository = {
     return { users, total };
   },
 
-  deleteById(payload: DeleteByIdPayload) {
-    const { id } = payload;
-
+  deleteById(id: number) {
     return prisma.user.delete({ where: { id } });
   },
 };
