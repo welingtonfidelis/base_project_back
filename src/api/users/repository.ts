@@ -34,15 +34,28 @@ const userRepository = {
   },
 
   async listAllIgnoreId(payload: ListAllIgnoreIdPayload) {
-    const { id, page, limit } = payload;
+    const { id, page, limit, filter_by_id, filter_by_name } = payload;
     const offset = (page - 1) * limit;
 
-    const total = await prisma.user.count({ where: { id: { not: id } } });
+    const where: any = { id: { not: id } };
+
+    if (filter_by_id) {
+      where.id = filter_by_id;
+    }
+
+    if (filter_by_name) {
+      where.name = { contains: filter_by_name };
+    }
+
+    const total = await prisma.user.count({ where });
 
     const users = await prisma.user.findMany({
-      where: { id: { not: id } },
+      where,
       skip: offset,
       take: limit,
+      orderBy: {
+        name: "asc",
+      },
     });
 
     return { users, total };

@@ -24,7 +24,7 @@ const authValidate = (
 
     return next();
   } catch (error) {
-    throw new AppError("Invalid token authenticate", 401);
+    throw new AppError("Not authenticated", 401);
   }
 };
 

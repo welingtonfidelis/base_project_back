@@ -41,7 +41,7 @@ const canApplyPermissions = (
     !loggedUserPermissions.includes(ADMIN);
 
   if (canApplyAdminPermission) {
-    throw new AppError("Invalid permission", 401);
+    throw new AppError("Invalid permission", 400);
   }
 };
 
@@ -60,12 +60,12 @@ const userController = {
     }
 
     if (selectedUser.is_blocked) {
-      return res.status(401).json({ message: "Blocked user" });
+      return res.status(400).json({ message: "Blocked user" });
     }
 
     const validPassword = bcrypt.compareSync(password, selectedUser.password);
     if (!validPassword) {
-      return res.status(401).json({ message: "Invalid password" });
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     const { id, name, email, permissions } = selectedUser;
@@ -175,7 +175,7 @@ const userController = {
       selectedUser.password
     );
     if (!validPassword) {
-      return res.status(401).json({ message: "Invalid old password" });
+      return res.status(400).json({ message: "Invalid old password" });
     }
 
     await updateUserPasswordService({ id, new_password });
@@ -197,7 +197,7 @@ const userController = {
     }
 
     if (selectedUser.is_blocked) {
-      return res.status(401).json({ message: "Blocked user" });
+      return res.status(400).json({ message: "Blocked user" });
     }
 
     const { id, name, email } = selectedUser;
@@ -219,8 +219,10 @@ const userController = {
     const { id } = req.authenticated_user;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
+    const filter_by_id = req.query.filter_by_id ? parseInt(req.query.filter_by_id as string) : undefined;
+    const filter_by_name = req.query.filter_by_name ? req.query.filter_by_name as string : undefined;
 
-    const users = await listUsersService({ id, page, limit });
+    const users = await listUsersService({ id, page, limit, filter_by_id, filter_by_name });
     const response = {
       ...users,
       users: users.users.map((item) => {
