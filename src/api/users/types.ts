@@ -1,10 +1,6 @@
 import { Role, User } from "@prisma/client";
 
 // CONTROLLER
-export type UpdateUserParams = {
-  id: number;
-}
-
 export type CreateUserBody = {
   name: string
   email: string
@@ -37,21 +33,6 @@ export type UpdateResetedPasswordBody = {
   token: string;
 }
 
-export type ListAllQuery = {
-  page: number;
-  limit: number;
-  filter_by_id?: number;
-  filter_by_name?: string;
-}
-
-export type GetByIdParams = {
-  id: string;
-}
-
-export type DeleteByIdParams = {
-  id: string;
-}
-
 // SERVICE
 export type CreateUserPayload = CreateUserBody & {}
 
@@ -75,6 +56,10 @@ export type UpdateResetedPasswordPayload = Omit<UpdateResetedPasswordBody, 'toke
   id: number;
 }
 
-export type ListAllIgnoreIdPayload = ListAllQuery & {
+export type ListAllIgnoreIdPayload = {
   id: number;
+  page: number;
+  limit: number;
+  filter_by_id?: number;
+  filter_by_name?: string;
 }
