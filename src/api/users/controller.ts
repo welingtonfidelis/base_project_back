@@ -31,6 +31,7 @@ const {
   createUserService,
 } = userService;
 
+const { ADMIN } = Role;
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
 
 const canApplyPermissions = (
@@ -38,8 +39,8 @@ const canApplyPermissions = (
   permissionsToApply: Role[]
 ) => {
   const canApplyAdminPermission =
-    permissionsToApply.includes(Role.ADMIN) &&
-    !loggedUserPermissions.includes(Role.ADMIN);
+    permissionsToApply.includes(ADMIN) &&
+    !loggedUserPermissions.includes(ADMIN);
 
   if (canApplyAdminPermission) {
     throw new AppError("Invalid permission", 401);
@@ -51,7 +52,10 @@ const userController = {
     const body = req.body as LoginBody;
     const { username, password } = body;
 
-    const selectedUser = await getUserByUsernameOrEmailService(username, username);
+    const selectedUser = await getUserByUsernameOrEmailService(
+      username,
+      username
+    );
 
     if (!selectedUser) {
       return res.status(404).json({ message: "Invalid username or email" });
@@ -97,7 +101,10 @@ const userController = {
     const { permissions } = req.authenticated_user;
     canApplyPermissions(permissions, body.permissions);
 
-    const selectedUser = await getUserByUsernameOrEmailService(body.username, body.email);
+    const selectedUser = await getUserByUsernameOrEmailService(
+      body.username,
+      body.email
+    );
 
     if (selectedUser) {
       if (selectedUser.username === body.username) {
@@ -182,7 +189,10 @@ const userController = {
     const body = req.body as ResetPasswordBody;
     const { username, language } = body;
 
-    const selectedUser = await getUserByUsernameOrEmailService(username, username);
+    const selectedUser = await getUserByUsernameOrEmailService(
+      username,
+      username
+    );
 
     if (!selectedUser) {
       return res.status(404).json({ message: "Invalid username or email" });
