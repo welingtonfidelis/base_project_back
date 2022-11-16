@@ -15,6 +15,7 @@ import {
 } from "./types";
 import { Role } from "@prisma/client";
 import { AppError } from "../../errors/AppError";
+import { HttpMessageEnum } from "../../shared/enum/httpMessage";
 
 const {
   getUserByIdService,
@@ -31,6 +32,17 @@ const {
 
 const { ADMIN } = Role;
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
+const {
+  INVALID_USERNAME_OR_EMAIL,
+  INVALID_PASSWORD,
+  INVALID_OLD_PASSWORD,
+  INVALID_PERMISSION,
+  BLOCKED_USER,
+  CAN_NOT_DELETE_YOURSELF,
+  EMAIL_ALREADY_USED,
+  USERNAME_ALREADY_USED,
+  USER_NOT_FOUND,
+} = HttpMessageEnum;
 
 const canApplyPermissions = (
   loggedUserPermissions: Role[],
@@ -41,7 +53,7 @@ const canApplyPermissions = (
     !loggedUserPermissions.includes(ADMIN);
 
   if (canApplyAdminPermission) {
-    throw new AppError("Invalid permission", 400);
+    throw new AppError(INVALID_PERMISSION.message, INVALID_PERMISSION.code);
   }
 };
 
@@ -56,16 +68,22 @@ const userController = {
     );
 
     if (!selectedUser) {
-      return res.status(404).json({ message: "Invalid username or email" });
+      return res
+        .status(INVALID_USERNAME_OR_EMAIL.code)
+        .json({ message: INVALID_USERNAME_OR_EMAIL.message });
     }
 
     if (selectedUser.is_blocked) {
-      return res.status(400).json({ message: "Blocked user" });
+      return res
+        .status(BLOCKED_USER.code)
+        .json({ message: BLOCKED_USER.message });
     }
 
     const validPassword = bcrypt.compareSync(password, selectedUser.password);
     if (!validPassword) {
-      return res.status(400).json({ message: "Invalid password" });
+      return res
+        .status(INVALID_PASSWORD.code)
+        .json({ message: INVALID_PASSWORD.message });
     }
 
     const { id, name, email, permissions } = selectedUser;
@@ -106,11 +124,15 @@ const userController = {
 
     if (selectedUser) {
       if (selectedUser.username === body.username) {
-        return res.status(400).json({ message: "Username already in use" });
+        return res
+          .status(USERNAME_ALREADY_USED.code)
+          .json({ message: USERNAME_ALREADY_USED.message });
       }
 
       if (selectedUser.email === body.email) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res
+          .status(EMAIL_ALREADY_USED.code)
+          .json({ message: EMAIL_ALREADY_USED.message });
       }
     }
 
@@ -142,7 +164,9 @@ const userController = {
       const selectedUser = await getUserByUsernameService(username);
 
       if (selectedUser && selectedUser.id !== id) {
-        return res.status(400).json({ message: "Username already in use" });
+        return res
+          .status(USERNAME_ALREADY_USED.code)
+          .json({ message: USERNAME_ALREADY_USED.message });
       }
     }
 
@@ -150,7 +174,9 @@ const userController = {
       const selectedUser = await getUserByEmailService(email);
 
       if (selectedUser && selectedUser.id !== id) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res
+          .status(EMAIL_ALREADY_USED.code)
+          .json({ message: EMAIL_ALREADY_USED.message });
       }
     }
 
@@ -167,7 +193,9 @@ const userController = {
     const selectedUser = await getUserByIdService(id);
 
     if (!selectedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res
+        .status(USER_NOT_FOUND.code)
+        .json({ message: USER_NOT_FOUND.message });
     }
 
     const validPassword = bcrypt.compareSync(
@@ -175,7 +203,9 @@ const userController = {
       selectedUser.password
     );
     if (!validPassword) {
-      return res.status(400).json({ message: "Invalid old password" });
+      return res
+        .status(INVALID_OLD_PASSWORD.code)
+        .json({ message: INVALID_OLD_PASSWORD.message });
     }
 
     await updateUserPasswordService({ id, new_password });
@@ -193,11 +223,15 @@ const userController = {
     );
 
     if (!selectedUser) {
-      return res.status(404).json({ message: "Invalid username or email" });
+      return res
+        .status(INVALID_USERNAME_OR_EMAIL.code)
+        .json({ message: INVALID_USERNAME_OR_EMAIL.message });
     }
 
     if (selectedUser.is_blocked) {
-      return res.status(400).json({ message: "Blocked user" });
+      return res
+        .status(BLOCKED_USER.code)
+        .json({ message: BLOCKED_USER.message });
     }
 
     const { id, name, email } = selectedUser;
@@ -219,10 +253,20 @@ const userController = {
     const { id } = req.authenticated_user;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
-    const filter_by_id = req.query.filter_by_id ? parseInt(req.query.filter_by_id as string) : undefined;
-    const filter_by_name = req.query.filter_by_name ? req.query.filter_by_name as string : undefined;
+    const filter_by_id = req.query.filter_by_id
+      ? parseInt(req.query.filter_by_id as string)
+      : undefined;
+    const filter_by_name = req.query.filter_by_name
+      ? (req.query.filter_by_name as string)
+      : undefined;
 
-    const users = await listUsersService({ id, page, limit, filter_by_id, filter_by_name });
+    const users = await listUsersService({
+      id,
+      page,
+      limit,
+      filter_by_id,
+      filter_by_name,
+    });
     const response = {
       ...users,
       users: users.users.map((item) => {
@@ -265,7 +309,9 @@ const userController = {
     const { id: loggedUserId } = req.authenticated_user;
 
     if (id === loggedUserId) {
-      return res.status(400).json({ message: "Cannot delete your own user" });
+      return res
+        .status(CAN_NOT_DELETE_YOURSELF.code)
+        .json({ message: CAN_NOT_DELETE_YOURSELF.message });
     }
 
     await deleteUserService(id);
