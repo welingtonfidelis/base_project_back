@@ -1,8 +1,16 @@
-import { User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 
 // CONTROLLER
 export type UpdateUserParams = {
   id: number;
+}
+
+export type CreateUserBody = {
+  name: string
+  email: string
+  username: string
+  is_blocked: boolean
+  permissions: Role[]
 }
 
 export type UpdateUserBody = Partial<User> & {
@@ -45,6 +53,8 @@ export type DeleteByIdParams = {
 }
 
 // SERVICE
+export type CreateUserPayload = CreateUserBody & {}
+
 export type UpdateUserPayload = UpdateUserBody & {
   id: number;
   file?: Express.Multer.File;

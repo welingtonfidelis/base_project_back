@@ -3,10 +3,11 @@ import { updateProfileSchema } from "./updateProfile";
 import { updateProfilePasswordSchema } from "./updateProfilePassword";
 import { resetPasswordSchema } from "./resetPassword";
 import { updatedResetedPasswordSchema } from "./updateResetedPassword";
-import { listAllSchema } from "./listAll";
+import { listSchema } from "./list";
 import { getByIdSchema } from "./getById";
-import { updateByIdSchema } from "./updateById";
-import { deleteByIdSchema } from "./deleteById";
+import { updateSchema } from "./update";
+import { deleteSchema } from "./delete";
+import { createSchema } from "./create";
 
 export {
   loginSchema,
@@ -14,8 +15,9 @@ export {
   updateProfilePasswordSchema,
   resetPasswordSchema,
   updatedResetedPasswordSchema,
-  listAllSchema,
+  listSchema,
   getByIdSchema,
-  updateByIdSchema,
-  deleteByIdSchema,
+  updateSchema,
+  deleteSchema,
+  createSchema,
 };

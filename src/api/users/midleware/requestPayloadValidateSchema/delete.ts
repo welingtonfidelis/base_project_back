@@ -1,7 +1,7 @@
 import Joi from "joi";
 
-const deleteByIdSchema = Joi.object({
+const deleteSchema = Joi.object({
   id: Joi.number().integer().positive().required(),
 });
 
-export { deleteByIdSchema };
+export { deleteSchema };

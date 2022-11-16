@@ -4,12 +4,13 @@ import multer from "multer";
 import { userController } from "./controller";
 import { payloadValidate } from "../../shared/middleware/payloadValidate";
 import {
-    deleteByIdSchema,
-    getByIdSchema,
-  listAllSchema,
+  deleteSchema,
+  getByIdSchema,
+  listSchema,
   loginSchema,
   resetPasswordSchema,
-  updateByIdSchema,
+  updateSchema,
+  createSchema,
   updatedResetedPasswordSchema,
   updateProfilePasswordSchema,
   updateProfileSchema,
@@ -17,7 +18,7 @@ import {
 import { permissionValidate } from "../../shared/middleware/permissionValidate";
 import { Role } from "@prisma/client";
 
-const { ADMIN, MANAGER, USER } = Role;
+const { ADMIN, MANAGER } = Role;
 
 const userNoAuthRouter = Router();
 const userRouter = Router();
@@ -29,10 +30,11 @@ const {
   updateProfilePassword,
   resetPassword,
   updateResetedPassword,
-  listAll,
+  list,
   getById,
-  updateById,
-  deleteById
+  update,
+  delete: deleteById,
+  create
 } = userController;
 
 // NOT AUTHENTICATED ROUTES
@@ -64,9 +66,10 @@ userRouter.patch(
 
 // ROUTES WITH PERMISSION VALIDATE
 userRouter.use(permissionValidate([ADMIN, MANAGER]));
-userRouter.get("/users", payloadValidate(listAllSchema), listAll);
+userRouter.get("/users", payloadValidate(listSchema), list);
 userRouter.get("/users/:id", payloadValidate(getByIdSchema), getById);
-userRouter.patch("/users/:id", payloadValidate(updateByIdSchema), updateById);
-userRouter.delete("/users/:id", payloadValidate(deleteByIdSchema), deleteById);
+userRouter.patch("/users/:id", payloadValidate(updateSchema), update);
+userRouter.post("/users", payloadValidate(createSchema), create);
+userRouter.delete("/users/:id", payloadValidate(deleteSchema), deleteById);
 
 export { userNoAuthRouter, userRouter };

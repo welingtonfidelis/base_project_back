@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const create = (content: any, secret: string, expiresMinutes?: number) => {
+const createToken = (content: any, secret: string, expiresMinutes?: number) => {
   const options: jwt.SignOptions = {};
 
   if (expiresMinutes) options.expiresIn = `${expiresMinutes}m`;
@@ -8,8 +8,8 @@ const create = (content: any, secret: string, expiresMinutes?: number) => {
   return jwt.sign(content, secret, options);
 };
 
-const validate = (token: string, secret: string, ignoreExpiration = false) => {
+const validateToken = (token: string, secret: string, ignoreExpiration = false) => {
   return jwt.verify(token, secret, { ignoreExpiration });
 };
 
-export { create, validate };
+export { createToken, validateToken };

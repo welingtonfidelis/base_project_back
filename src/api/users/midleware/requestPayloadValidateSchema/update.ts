@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import Joi from "joi";
 
-const updateByIdSchema = Joi.object({
+const updateSchema = Joi.object({
   id: Joi.number().integer().positive().required(),
   name: Joi.string(),
   username: Joi.string(),
@@ -10,4 +10,4 @@ const updateByIdSchema = Joi.object({
   is_blocked: Joi.boolean(),
 });
 
-export { updateByIdSchema };
+export { updateSchema };

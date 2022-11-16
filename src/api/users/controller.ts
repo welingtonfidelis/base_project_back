@@ -3,9 +3,10 @@ import dateFnsAdd from "date-fns/add";
 import bcrypt from "bcryptjs";
 
 import { userService } from "./service";
-import { create, validate } from "../../shared/service/token";
+import { createToken, validateToken } from "../../shared/service/token";
 import { config } from "../../config";
 import {
+  CreateUserBody,
   GetByIdParams,
   ListAllQuery,
   LoginBody,
@@ -15,28 +16,42 @@ import {
   UpdateUserBody,
 } from "./types";
 import { Role } from "@prisma/client";
+import { AppError } from "../../errors/AppError";
 
 const {
   getUserByIdService,
   getUserByUsernameService,
   getUserByEmailService,
+  getUserByUsernameOrEmailService,
   updateUserService,
-  updatePasswordService,
-  resetPasswordService,
-  listAllService,
-  deleteById,
+  updateUserPasswordService,
+  resetUserPasswordService,
+  listUsersService,
+  deleteUserService,
+  createUserService,
 } = userService;
 
 const { JSON_SECRET, SESSION_DURATION_HOURS } = config;
+
+const canApplyPermissions = (
+  loggedUserPermissions: Role[],
+  permissionsToApply: Role[]
+) => {
+  const canApplyAdminPermission =
+    permissionsToApply.includes(Role.ADMIN) &&
+    !loggedUserPermissions.includes(Role.ADMIN);
+
+  if (canApplyAdminPermission) {
+    throw new AppError("Invalid permission", 401);
+  }
+};
 
 const userController = {
   async login(req: Request, res: Response) {
     const body = req.body as LoginBody;
     const { username, password } = body;
 
-    let selectedUser = await getUserByUsernameService(username);
-
-    if (!selectedUser) selectedUser = await getUserByEmailService(username);
+    const selectedUser = await getUserByUsernameOrEmailService(username, username);
 
     if (!selectedUser) {
       return res.status(404).json({ message: "Invalid username or email" });
@@ -52,7 +67,7 @@ const userController = {
     }
 
     const { id, name, email, permissions } = selectedUser;
-    const cookieData = create(
+    const cookieData = createToken(
       { id, permissions },
       JSON_SECRET,
       SESSION_DURATION_HOURS * 60 + 1
@@ -76,6 +91,30 @@ const userController = {
     return res.status(204).json({});
   },
 
+  async create(req: Request, res: Response) {
+    const body = req.body as CreateUserBody;
+
+    const { permissions } = req.authenticated_user;
+    canApplyPermissions(permissions, body.permissions);
+
+    const selectedUser = await getUserByUsernameOrEmailService(body.username, body.email);
+
+    if (selectedUser) {
+      if (selectedUser.username === body.username) {
+        return res.status(400).json({ message: "Username already in use" });
+      }
+
+      if (selectedUser.email === body.email) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
+
+    const newUser = await createUserService(body);
+
+    const { id, username, email, password } = newUser;
+    return res.json({ id, username, email, password });
+  },
+
   async getProfile(req: Request, res: Response) {
     const { id } = req.authenticated_user;
 
@@ -97,17 +136,17 @@ const userController = {
     if (username) {
       const selectedUser = await getUserByUsernameService(username);
 
-      if (selectedUser && selectedUser.id !== id)
-        return res
-          .status(400)
-          .json({ message: "User username already in use" });
+      if (selectedUser && selectedUser.id !== id) {
+        return res.status(400).json({ message: "Username already in use" });
+      }
     }
 
     if (email) {
       const selectedUser = await getUserByEmailService(email);
 
-      if (selectedUser && selectedUser.id !== id)
-        return res.status(400).json({ message: "User email already in use" });
+      if (selectedUser && selectedUser.id !== id) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
     }
 
     await updateUserService({ ...body, file, id });
@@ -134,7 +173,7 @@ const userController = {
       return res.status(401).json({ message: "Invalid old password" });
     }
 
-    await updatePasswordService({ id, new_password });
+    await updateUserPasswordService({ id, new_password });
 
     return res.status(204).json({});
   },
@@ -143,9 +182,7 @@ const userController = {
     const body = req.body as ResetPasswordBody;
     const { username, language } = body;
 
-    let selectedUser = await getUserByUsernameService(username);
-
-    if (!selectedUser) selectedUser = await getUserByEmailService(username);
+    const selectedUser = await getUserByUsernameOrEmailService(username, username);
 
     if (!selectedUser) {
       return res.status(404).json({ message: "Invalid username or email" });
@@ -156,7 +193,7 @@ const userController = {
     }
 
     const { id, name, email } = selectedUser;
-    await resetPasswordService({ id, name, email, language });
+    await resetUserPasswordService({ id, name, email, language });
 
     return res.status(204).json({});
   },
@@ -164,17 +201,17 @@ const userController = {
   async updateResetedPassword(req: Request, res: Response) {
     const { new_password, token } = req.body as UpdateResetedPasswordBody;
 
-    const { id } = validate(token, JSON_SECRET) as any;
-    await updatePasswordService({ id, new_password });
+    const { id } = validateToken(token, JSON_SECRET) as any;
+    await updateUserPasswordService({ id, new_password });
 
     return res.status(204).json({});
   },
 
-  async listAll(req: Request, res: Response) {
+  async list(req: Request, res: Response) {
     const { id } = req.authenticated_user;
     const { page, limit } = req.query as unknown as ListAllQuery;
 
-    const users = await listAllService({ id, page, limit });
+    const users = await listUsersService({ id, page, limit });
     const response = {
       ...users,
       users: users.users.map((item) => {
@@ -198,19 +235,13 @@ const userController = {
     return res.json(rest);
   },
 
-  async updateById(req: Request, res: Response) {
+  async update(req: Request, res: Response) {
     const id = parseInt(req.params.id);
     const body = req.body as UpdateUserBody;
 
     if (body.permissions) {
       const { permissions } = req.authenticated_user;
-      const hasInvalidPermission =
-        body.permissions.includes(Role.ADMIN) &&
-        !permissions.includes(Role.ADMIN);
-
-      if (hasInvalidPermission) {
-        return res.status(400).json({ message: "Invalid permission" });
-      }
+      canApplyPermissions(permissions, body.permissions);
     }
 
     await updateUserService({ ...body, id });
@@ -218,7 +249,7 @@ const userController = {
     return res.status(204).json({});
   },
 
-  async deleteById(req: Request, res: Response) {
+  async delete(req: Request, res: Response) {
     const id = parseInt(req.params.id);
     const { id: loggedUserId } = req.authenticated_user;
 
@@ -226,7 +257,7 @@ const userController = {
       return res.status(400).json({ message: "Cannot delete your own user" });
     }
 
-    await deleteById(id);
+    await deleteUserService(id);
 
     return res.status(204).json({});
   },

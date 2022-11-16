@@ -1,3 +1,5 @@
+import { Role } from "@prisma/client";
+
 export {};
 
 declare global {
@@ -5,7 +7,7 @@ declare global {
     interface Request {
       authenticated_user: {
         id: number;
-        permissions: string[];
+        permissions: Role[];
       };
     }
   }

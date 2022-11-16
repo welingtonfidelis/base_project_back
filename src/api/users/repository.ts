@@ -5,13 +5,19 @@ import { ListAllIgnoreIdPayload, UpdateUserPayload } from "./types";
 const userRepository = {
   findByUserName(username: string) {
     return prisma.user.findFirst({
-      where: { OR: [{ username }] },
+      where: { username },
     });
   },
 
   findByEmail(email: string) {
     return prisma.user.findFirst({
-      where: { OR: [{ email }] },
+      where: { email },
+    });
+  },
+
+  findByUserNameOrEmail(username: string, email: string) {
+    return prisma.user.findFirst({
+      where: { OR: [{ username }, { email }] },
     });
   },
 
@@ -21,6 +27,10 @@ const userRepository = {
 
   updateById(id: number, data: Partial<User>) {
     return prisma.user.update({ where: { id }, data });
+  },
+
+  create(data: Omit<User, "id" | "created_at" | "updated_at">) {
+    return prisma.user.create({ data });
   },
 
   async listAllIgnoreId(payload: ListAllIgnoreIdPayload) {

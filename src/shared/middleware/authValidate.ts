@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { config } from "../../config";
 import { AppError } from "../../errors/AppError";
-import { validate } from "../service/token";
+import { validateToken } from "../service/token";
 
 const { JSON_SECRET } = config;
 
@@ -19,7 +19,7 @@ const authValidate = (
   try {
     const { token } = JSON.parse(cookies.secure_application_cookie);
 
-    const authenticatedUser = validate(token, JSON_SECRET);
+    const authenticatedUser = validateToken(token, JSON_SECRET);
     Object.assign(req, { authenticated_user: authenticatedUser });
 
     return next();
