@@ -37,6 +37,7 @@ const {
   INVALID_PASSWORD,
   INVALID_OLD_PASSWORD,
   INVALID_PERMISSION,
+  INVALID_RESET_TOKEN,
   BLOCKED_USER,
   CAN_NOT_DELETE_YOURSELF,
   EMAIL_ALREADY_USED,
@@ -243,10 +244,16 @@ const userController = {
   async updateResetedPassword(req: Request, res: Response) {
     const { new_password, token } = req.body as UpdateResetedPasswordBody;
 
-    const { id } = validateToken(token, JSON_SECRET) as any;
-    await updateUserPasswordService({ id, new_password });
+    try {
+      const { id } = validateToken(token, JSON_SECRET) as any;
+      await updateUserPasswordService({ id, new_password });
 
-    return res.status(204).json({});
+      return res.status(204).json({});
+    } catch (error) {
+      return res
+        .status(INVALID_RESET_TOKEN.code)
+        .json({ message: INVALID_RESET_TOKEN.message });
+    }
   },
 
   async list(req: Request, res: Response) {

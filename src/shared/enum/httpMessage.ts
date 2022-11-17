@@ -32,6 +32,12 @@ export const HttpMessageEnum = {
     code: 400,
     use: "/users;",
   },
+  INVALID_RESET_TOKEN: {
+    name: "INVALID_RESET_TOKEN",
+    message: "Invalid reset token",
+    code: 400,
+    use: "/users;",
+  },
   BLOCKED_USER: {
     name: "BLOCKED_USER",
     message: "Blocked user",
@@ -46,7 +52,7 @@ export const HttpMessageEnum = {
   },
   EMAIL_ALREADY_USED: {
     name: "EMAIL_ALREADY_USED",
-    message: "Username already in use",
+    message: "Email already in use",
     code: 400,
     use: "/users;",
   },
