@@ -57,7 +57,7 @@ export type UpdateResetedPasswordPayload = Omit<UpdateResetedPasswordBody, 'toke
 }
 
 export type ListAllIgnoreIdPayload = {
-  id: number;
+  logged_user_id: number;
   page: number;
   limit: number;
   filter_by_id?: number;

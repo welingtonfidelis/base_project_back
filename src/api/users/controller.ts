@@ -268,7 +268,7 @@ const userController = {
       : undefined;
 
     const users = await listUsersService({
-      id,
+      logged_user_id: id,
       page,
       limit,
       filter_by_id,
