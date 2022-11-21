@@ -70,6 +70,10 @@ const userService = {
       payload.image_key = "";
     }
 
+    if (payload.password) {
+      payload.password = bcrypt.hashSync(payload.password, ENCRYPT_SALT);
+    }
+
     delete payload.delete_image;
     delete payload.file;
 
@@ -77,8 +81,7 @@ const userService = {
   },
 
   async createUserService(payload: CreateUserPayload) {
-    const tempPassword = (Math.random() + 1).toString(36).substring(2);
-    const password = bcrypt.hashSync(tempPassword, ENCRYPT_SALT);
+    const password = bcrypt.hashSync(payload.password, ENCRYPT_SALT);
     const image_url = "";
     const image_key = "";
 
@@ -89,7 +92,7 @@ const userService = {
       image_key,
     });
 
-    return { ...newUser, password: tempPassword };
+    return { ...newUser, password: payload.password };
   },
 
   async updateUserPasswordService(payload: UpdatePasswordPayload) {

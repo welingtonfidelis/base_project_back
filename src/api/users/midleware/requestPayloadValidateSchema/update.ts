@@ -6,6 +6,7 @@ const updateSchema = Joi.object({
   name: Joi.string(),
   username: Joi.string(),
   email: Joi.string().email(),
+  password: Joi.string().min(3),
   permissions: Joi.array().items(Joi.string().valid(...Object.values(Role))),
   is_blocked: Joi.boolean(),
 });
