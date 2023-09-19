@@ -34,7 +34,7 @@ const userRepository = {
   },
 
   async listAllIgnoreId(payload: ListAllIgnoreIdPayload) {
-    const { logged_user_id, page, limit, filter_by_id, filter_by_name } = payload;
+    const { logged_user_id, page, limit, filter_by_id, filter_by_name, filter_by_not_role } = payload;
     const offset = (page - 1) * limit;
 
     const where: any = { AND: [] };
@@ -47,6 +47,12 @@ const userRepository = {
       where.AND.push({
         name: { contains: filter_by_name, mode: "insensitive" },
       });
+    }
+
+    if (filter_by_not_role) {
+      where.AND.push(
+        { NOT: { permissions: { hasSome: filter_by_not_role}}}
+      )
     }
 
     const total = await prisma.user.count({ where });

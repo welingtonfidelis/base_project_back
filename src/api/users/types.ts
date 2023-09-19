@@ -66,4 +66,5 @@ export type ListAllIgnoreIdPayload = {
   limit: number;
   filter_by_id?: number;
   filter_by_name?: string;
+  filter_by_not_role?: Role[];
 };

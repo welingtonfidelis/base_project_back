@@ -257,7 +257,7 @@ const userController = {
   },
 
   async list(req: Request, res: Response) {
-    const { id } = req.authenticated_user;
+    const { id, permissions } = req.authenticated_user;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
     const filter_by_id = req.query.filter_by_id
@@ -266,6 +266,7 @@ const userController = {
     const filter_by_name = req.query.filter_by_name
       ? (req.query.filter_by_name as string)
       : undefined;
+    const filter_by_not_role = permissions.includes(ADMIN) ? [] : [ADMIN]; 
 
     const users = await listUsersService({
       logged_user_id: id,
@@ -273,7 +274,9 @@ const userController = {
       limit,
       filter_by_id,
       filter_by_name,
+      filter_by_not_role
     });
+
     const response = {
       ...users,
       users: users.users.map((item) => {
