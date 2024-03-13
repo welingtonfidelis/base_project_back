@@ -11,7 +11,7 @@
     "build": "npm run clean && tsc && npm run copy-files",
     "dev": "nodemon src/server.ts",
     "db:migrate": "npx prisma migrate dev --name init",
-    "db:seed": "node --loader ts-node/esm prisma/seed.ts"
+    "db:seed": "ts-node --transpile-only prisma/seed.ts"
   },
   "author": "",
   "license": "ISC",
