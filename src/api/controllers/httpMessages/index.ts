@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { httpMessageService } from "./service";
+import { httpMessageService } from "../../services/httpMessages";
 
 const { listHttpMessagesService } = httpMessageService;
 

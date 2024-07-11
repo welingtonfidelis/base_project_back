@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 import { Request, Response } from "express";
-import { permissionService } from "./service";
+import { permissionService } from "../../services/permissions";
 
 const { listPermissionsService } = permissionService;
 const { ADMIN } = Role;

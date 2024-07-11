@@ -2,9 +2,8 @@ import { Request, Response } from "express";
 import dateFnsAdd from "date-fns/add";
 import bcrypt from "bcryptjs";
 
-import { userService } from "./service";
-import { createToken, validateToken } from "../../shared/service/token";
-import { config } from "../../config";
+import { userService } from "../../services/users";
+
 import {
   CreateUserBody,
   LoginBody,
@@ -14,8 +13,10 @@ import {
   UpdateUserBody,
 } from "./types";
 import { Role } from "@prisma/client";
-import { AppError } from "../../errors/AppError";
-import { HttpMessageEnum } from "../../shared/enum/httpMessage";
+import { HttpMessageEnum } from "../../../shared/enum/httpMessage";
+import { AppError } from "../../../errors/AppError";
+import { config } from "../../../config";
+import { createToken, validateToken } from "../../../shared/service/token";
 
 const {
   getUserByIdService,

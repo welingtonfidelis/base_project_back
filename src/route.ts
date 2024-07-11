@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response, Router } from "express";
 
-import { healthRouter } from "./api/health/route";
-import { httpMessageRouter } from "./api/httpMessages/route";
-import { permissionRouter } from "./api/permissions/route";
-import { userNoAuthRouter, userRouter } from "./api/users/route";
+
 import { authValidate } from "./shared/middleware/authValidate";
+import { healthRouter } from "./api/routes/health";
+import { userNoAuthRouter, userRouter } from "./api/routes/users";
+import { permissionRouter } from "./api/routes/permissions";
+import { httpMessageRouter } from "./api/routes/httpMessages";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use(httpMessageRouter);
 
 // ERROR HANDLER
 router.use((error: any, req: Request, res: Response, next: NextFunction) => {
+  console.log('error: ', error);
   const statusCode = error?.code || 500;
   const errorMessage = error?.message || "Internal server error";
 

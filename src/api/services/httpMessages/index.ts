@@ -1,4 +1,4 @@
-import { HttpMessageEnum } from "../../shared/enum/httpMessage";
+import { HttpMessageEnum } from "../../../shared/enum/httpMessage";
 
 const httpMessageService = {
   listHttpMessagesService() {

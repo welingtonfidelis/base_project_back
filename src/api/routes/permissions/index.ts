@@ -1,7 +1,8 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-import { permissionValidate } from "../../shared/middleware/permissionValidate";
-import { permissionController } from "./controller";
+
+import { permissionController } from "../../controllers/permissions";
+import { permissionValidate } from "../../../shared/middleware/permissionValidate";
 
 const { ADMIN, MANAGER } = Role;
 
@@ -10,6 +11,6 @@ const { list } = permissionController;
 
 // ROUTES WITH PERMISSION VALIDATE
 permissionRouter.use(permissionValidate([ADMIN, MANAGER]));
-permissionRouter.get('/permissions', list);
+permissionRouter.get("/permissions", list);
 
 export { permissionRouter };

@@ -1,8 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 
-import { userController } from "./controller";
-import { payloadValidate } from "../../shared/middleware/payloadValidate";
+import { userController } from "../../controllers/users";
 import {
   deleteSchema,
   getByIdSchema,
@@ -15,8 +14,9 @@ import {
   updateProfilePasswordSchema,
   updateProfileSchema,
 } from "./midleware/requestPayloadValidateSchema";
-import { permissionValidate } from "../../shared/middleware/permissionValidate";
 import { Role } from "@prisma/client";
+import { payloadValidate } from "../../../shared/middleware/payloadValidate";
+import { permissionValidate } from "../../../shared/middleware/permissionValidate";
 
 const { ADMIN, MANAGER } = Role;
 
@@ -34,7 +34,7 @@ const {
   getById,
   update,
   delete: deleteById,
-  create
+  create,
 } = userController;
 
 // NOT AUTHENTICATED ROUTES

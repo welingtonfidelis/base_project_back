@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
-import { prisma } from "../../dbCLient";
-import { ListAllIgnoreIdPayload, UpdateUserPayload } from "./types";
+import { prisma } from "../../../dbCLient";
+import { ListAllIgnoreIdPayload } from "./types";
 
 const userRepository = {
   findByUserName(username: string) {
@@ -34,7 +34,14 @@ const userRepository = {
   },
 
   async listAllIgnoreId(payload: ListAllIgnoreIdPayload) {
-    const { logged_user_id, page, limit, filter_by_id, filter_by_name, filter_by_not_role } = payload;
+    const {
+      logged_user_id,
+      page,
+      limit,
+      filter_by_id,
+      filter_by_name,
+      filter_by_not_role,
+    } = payload;
     const offset = (page - 1) * limit;
 
     const where: any = { AND: [] };
@@ -50,9 +57,7 @@ const userRepository = {
     }
 
     if (filter_by_not_role) {
-      where.AND.push(
-        { NOT: { permissions: { hasSome: filter_by_not_role}}}
-      )
+      where.AND.push({ NOT: { permissions: { hasSome: filter_by_not_role } } });
     }
 
     const total = await prisma.user.count({ where });

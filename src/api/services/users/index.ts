@@ -3,18 +3,18 @@ import fs from "fs";
 import handlebars from "handlebars";
 import { resolve } from "path";
 
-import { config } from "../../config";
-import { deleteFile, uploadImage } from "../../shared/service/file";
-import { sendMail } from "../../shared/service/mail";
-import { createToken } from "../../shared/service/token";
-import { userRepository } from "./repository";
+import { userRepository } from "../../repositories/users";
 import {
+  UpdateUserPayload,
   CreateUserPayload,
   ListAllIgnoreIdPayload,
   ResetPasswordPayload,
   UpdatePasswordPayload,
-  UpdateUserPayload,
 } from "./types";
+import { deleteFile, uploadImage } from "../../../shared/service/file";
+import { config } from "../../../config";
+import { createToken } from "../../../shared/service/token";
+import { sendMail } from "../../../shared/service/mail";
 
 const {
   findByUserName,

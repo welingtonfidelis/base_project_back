@@ -1,7 +1,8 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-import { permissionValidate } from "../../shared/middleware/permissionValidate";
-import { httpMessageController } from "./controller";
+
+import { httpMessageController } from "../../controllers/httpMessages";
+import { permissionValidate } from "../../../shared/middleware/permissionValidate";
 
 const { ADMIN, MANAGER } = Role;
 
@@ -10,6 +11,6 @@ const { list } = httpMessageController;
 
 // ROUTES WITH PERMISSION VALIDATE
 httpMessageRouter.use(permissionValidate([ADMIN, MANAGER]));
-httpMessageRouter.get('/http-messages', list);
+httpMessageRouter.get("/http-messages", list);
 
 export { httpMessageRouter };
