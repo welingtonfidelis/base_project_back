@@ -11,6 +11,6 @@ const { list } = httpMessageController;
 
 // ROUTES WITH PERMISSION VALIDATE
 httpMessageRouter.use(permissionValidate([ADMIN, MANAGER]));
-httpMessageRouter.get("/http-messages", list);
+httpMessageRouter.get("/", list);
 
 export { httpMessageRouter };

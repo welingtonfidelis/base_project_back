@@ -38,38 +38,38 @@ const {
 } = userController;
 
 // NOT AUTHENTICATED ROUTES
-userNoAuthRouter.post("/users/login", payloadValidate(loginSchema), login);
-userNoAuthRouter.post("/users/logout", logout);
+userNoAuthRouter.post("/login", payloadValidate(loginSchema), login);
+userNoAuthRouter.post("/logout", logout);
 userNoAuthRouter.post(
-  "/users/reset-password",
+  "/reset-password",
   payloadValidate(resetPasswordSchema),
   resetPassword
 );
 userNoAuthRouter.post(
-  "/users/update-reseted-password",
+  "/update-reseted-password",
   payloadValidate(updatedResetedPasswordSchema),
   updateResetedPassword
 );
 
 // AUTHENTICATED ROUTES
-userRouter.get("/users/profile", getProfile);
+userRouter.get("/profile", getProfile);
 userRouter.patch(
-  "/users/profile",
+  "/profile",
   [multer().single("file"), payloadValidate(updateProfileSchema)],
   updateProfile
 );
 userRouter.patch(
-  "/users/profile/password",
+  "/profile/password",
   payloadValidate(updateProfilePasswordSchema),
   updateProfilePassword
 );
 
 // ROUTES WITH PERMISSION VALIDATE
 userRouter.use(permissionValidate([ADMIN, MANAGER]));
-userRouter.get("/users", payloadValidate(listSchema), list);
-userRouter.get("/users/:id", payloadValidate(getByIdSchema), getById);
-userRouter.patch("/users/:id", payloadValidate(updateSchema), update);
-userRouter.post("/users", payloadValidate(createSchema), create);
-userRouter.delete("/users/:id", payloadValidate(deleteSchema), deleteById);
+userRouter.get("/", payloadValidate(listSchema), list);
+userRouter.get("/:id", payloadValidate(getByIdSchema), getById);
+userRouter.patch("/:id", payloadValidate(updateSchema), update);
+userRouter.post("", payloadValidate(createSchema), create);
+userRouter.delete("/:id", payloadValidate(deleteSchema), deleteById);
 
 export { userNoAuthRouter, userRouter };

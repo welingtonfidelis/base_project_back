@@ -10,14 +10,14 @@ import { httpMessageRouter } from "./api/routes/httpMessages";
 const router = Router();
 
 // NO AUTHENTICATED ROUTES
-router.use(healthRouter);
-router.use(userNoAuthRouter);
+router.use('/health', healthRouter);
+router.use('/users', userNoAuthRouter);
 
 // AUTHENTICATED ROUTES
 router.use(authValidate);
-router.use(userRouter);
-router.use(permissionRouter);
-router.use(httpMessageRouter);
+router.use('/users', userRouter);
+router.use('/permissions', permissionRouter);
+router.use('/http-messages', httpMessageRouter);
 
 // ERROR HANDLER
 router.use((error: any, req: Request, res: Response, next: NextFunction) => {

@@ -11,6 +11,6 @@ const { list } = permissionController;
 
 // ROUTES WITH PERMISSION VALIDATE
 permissionRouter.use(permissionValidate([ADMIN, MANAGER]));
-permissionRouter.get("/permissions", list);
+permissionRouter.get("/", list);
 
 export { permissionRouter };
